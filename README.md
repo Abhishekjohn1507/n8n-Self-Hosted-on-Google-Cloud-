@@ -166,6 +166,55 @@ sudo certbot --nginx -d your-domain.com
 - 🆙 Regularly update Docker and the n8n image
 
 ---
+## 🐞 Debugging Steps (If Website Doesn’t Load)
+
+If you encounter issues accessing your n8n instance, systematically check the following:
+
+### 1. Check if Nginx is running:
+
+```bash
+sudo systemctl status nginx
+# If not active (dead), restart it:
+sudo systemctl restart nginx
+```
+### 2. Verify Nginx Configuration:
+```bash
+sudo nginx -t
+# If there are errors, correct them in /etc/nginx/sites-available/n8n.conf
+# Then restart Nginx:
+sudo systemctl restart nginx
+```
+### 3. Check SSL Certificate with Certbot:
+```bash
+sudo certbot certificates
+# Or try to renew (dry-run) to check for issues:
+sudo certbot renew --dry-run
+```
+
+### 4. Ensure Docker is Running and n8n Container is Healthy:
+```bash
+sudo docker ps
+# Look for a container named 'n8n' with status 'Up'. If not running:
+sudo docker restart n8n
+# Check container logs for errors:
+sudo docker logs n8n
+```
+
+### 5. Open Ports on Google Cloud Firewall:
+
+Confirm your firewall rules are correctly configured and applied to your VM. You can do this in the Google Cloud Console under VPC network > Firewall rules, or by running the gcloud command again (though it will fail if the rule already exists, but it confirms the syntax).
+
+```bash
+# This command creates the rule. If it exists, it will show an error,
+# but confirms the command structure. Check the console for existing rules.
+gcloud compute firewall-rules create allow-n8n \
+  --allow=tcp:80,tcp:443,tcp:5678 \
+  --target-tags=n8n-server \
+  --source-ranges=0.0.0.0/0 \
+  --description="Allow traffic to n8n"
+```
+ ### Also, ensure your VM instance has the n8n-server network tag applied
+
 
 ### 👨‍💻 Need help?
 
